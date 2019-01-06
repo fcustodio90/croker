@@ -2,7 +2,15 @@ import Highcharts from 'highcharts';
 
 const chartElement = document.getElementById('chart-container');
 
-const renderChart = function(data) {
+const getData = (id, timeframe) => (
+  fetch(`http://localhost:3000/cryptocurrencies/${id}/chart/${timeframe}.json`)
+  .then(response => response.json())
+  .then((data) => {
+    renderChart(data[0]);
+  })
+);
+
+const renderChart = function(getData) {
      Highcharts.chart(chartElement, {
 
       chart: {
@@ -35,7 +43,7 @@ const renderChart = function(data) {
       },
       series: [{
         name : "|",
-        data: data,
+        data: getData,
         lineColor: '#60cd44',
         color: '#60cd44',
         fillOpacity: 0.5,
@@ -51,7 +59,7 @@ const renderChart = function(data) {
 const initCharts = function() {
 
   if (chartElement) {
-    const data = JSON.parse(chartElement.dataset.historicalPrices);
+
     const oneDayBtn = document.querySelector('.one-day');
     const oneWeekBtn = document.querySelector('.one-week');
     const oneMonthBtn = document.querySelector('.one-month');
@@ -62,28 +70,20 @@ const initCharts = function() {
         x.classList.remove('selected');
       });
     });
-    oneDayBtn.addEventListener("click", function(event) {
-      renderChart(data[3]);
-      removeSelectedClass();
-      oneDayBtn.classList.add('selected');
-    });
-    oneWeekBtn.addEventListener("click", function(event) {
-      renderChart(data[2]);
-      removeSelectedClass();
-      oneWeekBtn.classList.add('selected');
-    });
-    oneMonthBtn.addEventListener("click", function(event) {
-      renderChart(data[1]);
-      removeSelectedClass();
-      oneMonthBtn.classList.add('selected');
-    });
-    oneYearBtn.addEventListener("click", function(event) {
-      renderChart(data[0]);
-      removeSelectedClass();
-      oneYearBtn.classList.add('selected');
-    });
-    renderChart(data[3]);
 
+    getData(oneDayBtn.dataset.cryptoId, oneDayBtn.dataset.timeframe);
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", function(event) {
+       const cryptoId = event.target.dataset.cryptoId;
+       const timeFrame = event.target.dataset.timeframe;
+
+       getData(cryptoId, timeFrame);
+
+       removeSelectedClass();
+       button.classList.add('selected');
+     });
+    })
   }
 };
 
